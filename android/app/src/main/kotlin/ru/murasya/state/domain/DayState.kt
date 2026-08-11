@@ -7,9 +7,8 @@ enum class DayState(
     RED(1),
     YELLOW(2),
     GREEN(3),
-    ;
-
-    fun next(): DayState = entries[(ordinal + 1) % entries.size]
 }
 
 fun stateOf(code: Int): DayState = DayState.entries.firstOrNull { it.code == code } ?: DayState.WHITE
+
+fun DayState.paintedWith(brush: DayState): DayState = if (this == brush) DayState.WHITE else brush

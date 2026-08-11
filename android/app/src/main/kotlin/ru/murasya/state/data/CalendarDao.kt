@@ -14,4 +14,10 @@ interface CalendarDao {
 
     @Query("DELETE FROM day WHERE `date` = :date")
     suspend fun clear(date: Long)
+
+    @Query("SELECT `state` FROM brush WHERE `id` = 0")
+    fun brushFlow(): Flow<List<Int>>
+
+    @Query("INSERT OR REPLACE INTO brush (`id`, `state`) VALUES (0, :state)")
+    suspend fun putBrush(state: Int)
 }

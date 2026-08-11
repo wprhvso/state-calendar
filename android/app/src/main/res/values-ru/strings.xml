@@ -7,8 +7,7 @@
     <string name="action_next_month">Следующий месяц</string>
     <string name="action_pick_month">Выбрать месяц</string>
     <string name="action_today">Сегодня</string>
-    <string name="action_cycle">Сменить цвет</string>
-    <string name="action_reset">Очистить день</string>
+    <string name="action_paint">Закрасить день</string>
 
     <string name="action_prev_year">Предыдущий год</string>
     <string name="action_next_year">Следующий год</string>
