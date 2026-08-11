@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Календарь состояний</string>
+
+    <string name="action_prev_month">Предыдущий месяц</string>
+    <string name="action_next_month">Следующий месяц</string>
+    <string name="action_pick_month">Выбрать месяц</string>
+    <string name="action_today">Сегодня</string>
+    <string name="action_cycle">Сменить цвет</string>
+    <string name="action_reset">Очистить день</string>
+
+    <string name="action_prev_year">Предыдущий год</string>
+    <string name="action_next_year">Следующий год</string>
+    <string name="action_close">Закрыть</string>
+
+    <string name="state_white">Пусто</string>
+    <string name="state_red">Красный</string>
+    <string name="state_yellow">Жёлтый</string>
+    <string name="state_green">Зелёный</string>
+
+</resources>

@@ -1,0 +1,1 @@
+-keep class ru.murasya.state.ui.MainActivity { *; }
