@@ -18,7 +18,7 @@ abstract class CalendarDatabase : RoomDatabase() {
 
         private val ADD_BRUSH =
             object : Migration(1, 2) {
-                override fun migrate(connection: SQLiteConnection) {
+                override suspend fun migrate(connection: SQLiteConnection) {
                     connection.execSQL(
                         "CREATE TABLE IF NOT EXISTS `brush` " +
                             "(`id` INTEGER NOT NULL, `state` INTEGER NOT NULL, PRIMARY KEY(`id`))",
