@@ -2,9 +2,10 @@ package ru.murasya.state.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -85,24 +89,40 @@ fun MonthGrid(
 private fun DayCell(date: LocalDate, state: DayState, today: Boolean, size: Dp, onPaint: (LocalDate) -> Unit) {
     val press = remember { MutableInteractionSource() }
     val pressed by press.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        if (pressed) PRESSED_SCALE else 1f,
-        animationSpec = springySpatial(),
-        label = "dayScale",
-    )
-    val fill by animateColorAsState(fillOf(state), animationSpec = calmEffects(), label = "dayFill")
+    val squeeze =
+        animateFloatAsState(
+            if (pressed) PRESSED_SCALE else 1f,
+            animationSpec = springySpatial(),
+            label = "daySqueeze",
+        )
+    val ink = rememberDayInk(state)
+    val under = fillOf(ink.under)
+    val over = fillOf(ink.over)
+    val blot = fillOf(ink.stain?.state ?: ink.under)
+    val face = ink.face
     val shape = MaterialTheme.shapes.small
     val edge = edgeOf(today, state)
+    val stroke by animateColorAsState(edge.color, animationSpec = quickEffects(), label = "dayEdge")
+    val digit by animateColorAsState(inkOf(face, fillOf(face)), animationSpec = quickEffects(), label = "dayInk")
     val label = stringResource(nameOf(state))
     Box(
         modifier =
             Modifier
                 .size(size)
-                .scale(scale)
+                .graphicsLayer {
+                    val bump = squeeze.value * ink.lift
+                    scaleX = bump
+                    scaleY = bump
+                }.drawBehind { haloDay(ink, over, shape) }
                 .clip(shape)
-                .background(fill)
-                .border(edge.width, edge.color, shape)
-                .clickable(
+                .drawBehind { washDay(ink, under, blot, over) }
+                .border(edge.width, stroke, shape)
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        ink.origin = down.position
+                    }
+                }.clickable(
                     interactionSource = press,
                     indication = null,
                     onClickLabel = stringResource(R.string.action_paint),
@@ -114,7 +134,7 @@ private fun DayCell(date: LocalDate, state: DayState, today: Boolean, size: Dp, 
             text = date.dayOfMonth.toString(),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = if (today) FontWeight.Bold else null,
-            color = inkOf(state, fill),
+            color = digit,
         )
     }
 }
@@ -129,5 +149,5 @@ private fun edgeOf(today: Boolean, state: DayState): Edge =
     when {
         today -> Edge(TODAY_RING.dp, MaterialTheme.colorScheme.primary)
         state == DayState.WHITE -> Edge(BLANK_EDGE.dp, MaterialTheme.colorScheme.outlineVariant)
-        else -> Edge(BLANK_EDGE.dp, Color.Transparent)
+        else -> Edge(BLANK_EDGE.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0f))
     }

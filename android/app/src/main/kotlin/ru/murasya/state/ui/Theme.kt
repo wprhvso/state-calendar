@@ -3,7 +3,9 @@ package ru.murasya.state.ui
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +26,8 @@ private val YELLOW_LIGHT = Color(0xFFF0C23C)
 private val YELLOW_DARK = Color(0xFFBE9526)
 private val GREEN_LIGHT = Color(0xFF43B77A)
 private val GREEN_DARK = Color(0xFF2F8A60)
+
+private const val QUICK_MS = 160
 
 private val CALENDAR_SHAPES =
     Shapes(
@@ -71,3 +75,5 @@ fun nameOf(state: DayState): Int =
 fun <T> springySpatial(): SpringSpec<T> = spring(dampingRatio = 0.62f, stiffness = Spring.StiffnessMediumLow)
 
 fun <T> calmEffects(): SpringSpec<T> = spring(dampingRatio = 1f, stiffness = Spring.StiffnessMedium)
+
+fun <T> quickEffects(): TweenSpec<T> = tween(QUICK_MS)
