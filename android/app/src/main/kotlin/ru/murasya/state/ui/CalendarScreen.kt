@@ -60,6 +60,7 @@ private const val PAGE_SPACING = 16
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel = viewModel()) {
     val marks by viewModel.marks.collectAsStateWithLifecycle()
+    val brush by viewModel.brush.collectAsStateWithLifecycle()
     val locale = remember { Locale.getDefault() }
     val firstDay = remember(locale) { WeekFields.of(locale).firstDayOfWeek }
     var today by remember { mutableStateOf(LocalDate.now()) }
@@ -97,13 +98,14 @@ fun CalendarScreen(viewModel: CalendarViewModel = viewModel()) {
                 locale = locale,
                 today = today,
                 marks = marks,
-                onCycle = viewModel::cycle,
-                onReset = viewModel::reset,
+                onPaint = viewModel::paint,
                 modifier = Modifier.weight(1f),
             )
             MonthSummary(
                 counts = counts,
+                brush = brush,
                 showToday = month != YearMonth.from(today),
+                onPick = viewModel::pick,
                 onToday = { scope.goTo(pager, pageOfMonth(YearMonth.from(today))) },
             )
         }
@@ -130,8 +132,7 @@ private fun CalendarBody(
     locale: Locale,
     today: LocalDate,
     marks: Map<Long, DayState>,
-    onCycle: (LocalDate) -> Unit,
-    onReset: (LocalDate) -> Unit,
+    onPaint: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     BoxWithConstraints(modifier = modifier) {
@@ -152,8 +153,7 @@ private fun CalendarBody(
                     today = today,
                     marks = marks,
                     cell = cell,
-                    onCycle = onCycle,
-                    onReset = onReset,
+                    onPaint = onPaint,
                 )
             }
         }

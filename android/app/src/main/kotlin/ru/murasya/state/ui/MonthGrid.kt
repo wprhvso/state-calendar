@@ -2,10 +2,9 @@ package ru.murasya.state.ui
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -25,8 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -54,8 +51,7 @@ fun MonthGrid(
     today: LocalDate,
     marks: Map<Long, DayState>,
     cell: Dp,
-    onCycle: (LocalDate) -> Unit,
-    onReset: (LocalDate) -> Unit,
+    onPaint: (LocalDate) -> Unit,
 ) {
     val weeks = remember(month, firstDay) { monthGrid(month, firstDay).chunked(WEEK_DAYS) }
     Column(
@@ -76,8 +72,7 @@ fun MonthGrid(
                             state = marks[date.toEpochDay()] ?: DayState.WHITE,
                             today = date == today,
                             size = cell,
-                            onCycle = onCycle,
-                            onReset = onReset,
+                            onPaint = onPaint,
                         )
                     }
                 }
@@ -86,17 +81,8 @@ fun MonthGrid(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DayCell(
-    date: LocalDate,
-    state: DayState,
-    today: Boolean,
-    size: Dp,
-    onCycle: (LocalDate) -> Unit,
-    onReset: (LocalDate) -> Unit,
-) {
-    val haptics = LocalHapticFeedback.current
+private fun DayCell(date: LocalDate, state: DayState, today: Boolean, size: Dp, onPaint: (LocalDate) -> Unit) {
     val press = remember { MutableInteractionSource() }
     val pressed by press.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -116,16 +102,11 @@ private fun DayCell(
                 .clip(shape)
                 .background(fill)
                 .border(edge.width, edge.color, shape)
-                .combinedClickable(
+                .clickable(
                     interactionSource = press,
                     indication = null,
-                    onClickLabel = stringResource(R.string.action_cycle),
-                    onLongClickLabel = stringResource(R.string.action_reset),
-                    onClick = { onCycle(date) },
-                    onLongClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onReset(date)
-                    },
+                    onClickLabel = stringResource(R.string.action_paint),
+                    onClick = { onPaint(date) },
                 ).semantics { stateDescription = label },
         contentAlignment = Alignment.Center,
     ) {

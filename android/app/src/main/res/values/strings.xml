@@ -8,8 +8,7 @@
     <string name="action_next_month">Next month</string>
     <string name="action_pick_month">Pick a month</string>
     <string name="action_today">Today</string>
-    <string name="action_cycle">Change the colour</string>
-    <string name="action_reset">Clear the day</string>
+    <string name="action_paint">Paint the day</string>
 
     <string name="action_prev_year">Previous year</string>
     <string name="action_next_year">Next year</string>

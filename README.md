@@ -3,10 +3,10 @@
 A mood calendar for Android. The whole app is one screen: a month of days, and a tap that
 changes the colour of one.
 
-* **Tap a day** — it moves one step along `white → red → yellow → green`, and green wraps
-  back to white. Every day starts white.
-* **Long press a day** — straight back to white, so overshooting the colour you wanted costs
-  one gesture instead of three.
+* **Tap a colour** in the tally along the bottom — that is the brush, and it stays picked
+  until you pick another one. Red to begin with.
+* **Tap a day** — it takes the brush's colour. Tap it again with the same brush and it goes
+  back to white, so clearing a day is the same gesture that set it. Every day starts white.
 * **Swipe** left or right for the next month, or use the arrows. **Tap the month** for a
   picker that jumps to any month of any year between 1970 and 2100.
 
@@ -24,13 +24,18 @@ One Room table, one row per coloured day:
 
 White is not stored. A white day is a day with no row, which is what makes "everything starts
 white" a fact about the schema rather than a rule the code has to remember: an empty database
-and a calendar of white days are the same thing. Cycling back to white deletes the row, so the
-table only ever holds days you actually answered for, and a year of untouched calendar costs
-nothing.
+and a calendar of white days are the same thing. Clearing a day deletes its row, so the table
+only ever holds days you actually answered for, and a year of untouched calendar costs nothing.
 
 Dates are epoch days rather than timestamps. A day is a calendar fact, not an instant — storing
 it as one would mean a day marked in one time zone quietly landing on its neighbour after a
 flight.
+
+The brush — the colour the next tap paints with — is the one other thing the app remembers, and
+it is a second table of exactly one row: a fixed key and a state code, upserted in place. It
+lives in the database rather than in preferences because it is a single integer of the same kind
+as the day states, and a second storage engine for one number would cost more than the row does.
+A fresh install has no row and starts red.
 
 ## The screen
 
@@ -52,7 +57,14 @@ header rather than inside a date.
 
 White, red, yellow, green — in that order, because it is the order everyone already reads on a
 traffic light, and the only order in which the four colours have an obvious meaning without a
-legend.
+legend. It is also the order of the tally along the bottom, which doubles as the colour picker:
+the counts are already there, one per colour, so the row that tells you how the month went is
+the row you reach for to change it.
+
+Painting is one rule — a tap sets the brush's colour, unless the day already has it, in which
+case it clears. Every colour is one tap away from every other, and undoing a mistake is the
+gesture you just made rather than a different one. The white brush is the same rule seen from
+the other side: a day painted white is already white, so white always clears.
 
 White is the absence of an answer, so it is drawn as the surface the calendar sits on: in the
 light theme that is literally white, and in the dark theme it is the darkest surface tone. A grid
@@ -83,7 +95,7 @@ build-tools 37.0.0).
 | --- | --- |
 | `just build` | signed release APK in `android/app/build/outputs/apk/release` |
 | `just debug` | debug APK |
-| `just test` | unit tests for the calendar arithmetic and the colour cycle |
+| `just test` | unit tests for the calendar arithmetic and the painting rule |
 | `just lint` | ktlint and detekt with the shared [qa-kotlin](https://github.com/wprhvso/qa-kotlin) config |
 | `just fix` | same, with formatting applied |
 | `just install` | install the built APK over adb and launch it |
@@ -102,5 +114,5 @@ surfaces; and `material-icons-extended` is frozen, so the four icons the app nee
 Symbols shipped as vector drawables.
 
 All of the logic that can be tested without a device is in `domain` and has no Android imports:
-the page-to-month mapping, the six-week grid, the month tally, the colour cycle and the display
-names. The `ui` layer is arrangement, and `data` is thirty lines of Room.
+the page-to-month mapping, the six-week grid, the month tally, the painting rule and the display
+names. The `ui` layer is arrangement, and `data` is forty lines of Room.

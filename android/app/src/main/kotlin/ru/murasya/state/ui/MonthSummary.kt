@@ -1,6 +1,7 @@
 package ru.murasya.state.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -20,12 +21,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import ru.murasya.state.R
@@ -34,14 +38,26 @@ import ru.murasya.state.domain.DayState
 private const val DOT_SIZE = 14
 
 @Composable
-fun MonthSummary(counts: Map<DayState, Int>, showToday: Boolean, onToday: () -> Unit) {
+fun MonthSummary(
+    counts: Map<DayState, Int>,
+    brush: DayState,
+    showToday: Boolean,
+    onPick: (DayState) -> Unit,
+    onToday: () -> Unit,
+) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DayState.entries.forEach { state ->
-            CountChip(state = state, count = counts[state] ?: 0, modifier = Modifier.weight(1f))
+            CountChip(
+                state = state,
+                count = counts[state] ?: 0,
+                picked = state == brush,
+                onPick = { onPick(state) },
+                modifier = Modifier.weight(1f),
+            )
         }
         AnimatedVisibility(
             visible = showToday,
@@ -54,12 +70,26 @@ fun MonthSummary(counts: Map<DayState, Int>, showToday: Boolean, onToday: () -> 
 }
 
 @Composable
-private fun CountChip(state: DayState, count: Int, modifier: Modifier = Modifier) {
+private fun CountChip(
+    state: DayState,
+    count: Int,
+    picked: Boolean,
+    onPick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val label = stringResource(nameOf(state))
+    val fill by animateColorAsState(chipFill(picked), animationSpec = calmEffects(), label = "chipFill")
+    val ink by animateColorAsState(chipInk(picked), animationSpec = calmEffects(), label = "chipInk")
     Surface(
+        onClick = onPick,
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = modifier.semantics { contentDescription = label },
+        color = fill,
+        contentColor = ink,
+        modifier =
+            modifier.semantics {
+                contentDescription = label
+                selected = picked
+            },
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
@@ -71,6 +101,22 @@ private fun CountChip(state: DayState, count: Int, modifier: Modifier = Modifier
         }
     }
 }
+
+@Composable
+private fun chipFill(picked: Boolean): Color =
+    if (picked) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceContainer
+    }
+
+@Composable
+private fun chipInk(picked: Boolean): Color =
+    if (picked) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
 
 @Composable
 private fun Dot(state: DayState) {
